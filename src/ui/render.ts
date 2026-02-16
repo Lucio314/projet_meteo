@@ -11,7 +11,7 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
 export function renderDaily(el: HTMLElement, data: DailyWeather) {
   el.innerHTML = `
     <h2>Aujourd'hui</h2>
-    <p>Min : ${data.temperature_2m_min[0]} ${data.temperature_2m_max} </p>
+    <p>Min : ${data.temperature_2m_min[0]} °C </p>
     <p>Max : ${data.temperature_2m_max[0]} °C</p>
   `;
 }
