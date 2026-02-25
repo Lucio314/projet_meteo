@@ -2,6 +2,32 @@ import { getWeatherDescription } from "../utils/weatherInterpreter.js";
 import type { CurrentWeather, DailyWeather, HourlyWeather } from "../models/weather.js";
 
 
+
+function setupInitialEvents() {
+  const btnAdd = document.getElementById('btn-add-city');
+  const btnSettings = document.getElementById('btn-settings');
+  const searchBar = document.getElementById('search-bar');
+  const details = document.querySelector('.current-details');
+
+btnAdd?.addEventListener('click', () => {
+  if (searchBar) {
+    // La propriété .hidden est un booléen HTML simple (vrai ou faux)
+    searchBar.hidden = !searchBar.hidden;
+    console.log("Barre de recherche basculée. État caché :", searchBar.hidden);
+  }
+});
+
+  // Action du bouton Settings (Filtres)
+  btnSettings?.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Pour l'instant, on simule le filtre en cachant/montrant les détails
+    if (details) {
+      details.classList.toggle('hidden');
+      console.log("Filtres activés");
+    }
+  });
+}
+
 // ================= CURRENT WEATHER =================
 
 export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
@@ -16,8 +42,12 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
       <div class="current-desc">${description}</div>
       <div class="current-wind">
         Vent : <span class="value">${data.wind_speed_10m} km/h</span>
-        <button class="toggle-details">Voir plus</button>
       </div>
+        <div class="toolbar">
+          <button id="btn-add-city" class="circle-btn" title="Ajouter une ville">➕</button>
+          <button id="btn-settings" class="circle-btn" title="Paramètres">⚙️</button>
+        </div>
+      
     </div>
 
     <div class="current-details hidden">
@@ -27,6 +57,7 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
       <p>Heure : ${data.time.split("T")[1]}</p>
     </div>
   `;
+  setupInitialEvents();
 }
 
 
@@ -34,13 +65,29 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
 // ================= DAILY WEATHER =================
 
 export function renderDaily(el: HTMLElement, data: DailyWeather) {
+  // On génère le HTML pour chaque jour (data.time contient les 7 dates)
+  const dailyHtml = data.time.map((date, i) => {
+    // On formate un peu la date pour qu'elle soit plus jolie (ex: 2024-03-12)
+    const shortDate = date.split("-").slice(1).join("/"); 
+    const description = getWeatherDescription(data.weather_code[i]);
+
+    return `
+      <div class="daily-card">
+        <span class="day-date">${shortDate}</span>
+        <span class="day-desc">${description}</span>
+        <div class="day-temps">
+          <span class="max">${data.temperature_2m_max[i]}°</span>
+          <span class="min">${data.temperature_2m_min[i]}°</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
   el.innerHTML = `
-    <h2>Aujourd'hui</h2>
-    <p>Min : <span class="value">${data.temperature_2m_min[0]} °C</span></p>
-    <p>Max : <span class="value">${data.temperature_2m_max[0]} °C</span></p>
-    <p>Précipitations : <span class="value">${data.precipitation_sum[0]} mm</span></p>
-    <p>Lever du soleil : ${data.sunrise[0].split("T")[1]}</p>
-    <p>Coucher du soleil : ${data.sunset[0].split("T")[1]}</p>
+    <h2>Prévisions sur 7 jours</h2>
+    <div class="daily-container">
+      ${dailyHtml}
+    </div>
   `;
 }
 
