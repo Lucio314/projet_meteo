@@ -68,8 +68,7 @@ export function renderHourly(
 
   const hourlyHtml = hourlyTimes.map((time, i) => {
     const hour = time.split("T")[1];
-
-    return `
+    return`
       <li>
         <span class="hour">${hour}</span>
         <span class="temp">${hourlyTemps[i]} °C</span>

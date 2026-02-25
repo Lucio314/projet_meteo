@@ -41,9 +41,10 @@ L'application fonctionne entièrement dans le navigateur.
 ## Structure du projet
 
 src/
-  api/ → appels à l'API météo
+  api/ → appels à l'API météo et de géolocalisation
   models/ → interfaces TypeScript
   ui/ → affichage et rendu HTML
+  utils/ →  fonctions utilitaires
   main.ts → point d'entrée
 
 dist/ → fichiers JavaScript compilés

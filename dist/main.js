@@ -13,11 +13,14 @@ async function init() {
         renderHourly(hourlyEl, data.hourly, data.current.time);
         document.addEventListener("click", (e) => {
             const target = e.target;
-            if (target.classList.contains("toggle-details")) {
-                const container = target.closest(".current-weather");
-                const details = container?.querySelector(".current-details");
-                details?.classList.toggle("hidden");
-            }
+            if (!target.classList.contains("toggle-details"))
+                return;
+            const main = target.closest(".current-main"); // On suppose que le bouton est à l'intérieur de .current-main
+            const details = main?.nextElementSibling;
+            if (!details || !details.classList.contains("current-details"))
+                return;
+            const isHidden = details.classList.toggle("hidden");
+            target.textContent = isHidden ? "Voir plus" : "Voir moins";
         });
     }
     catch (err) {
