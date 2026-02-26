@@ -4,17 +4,9 @@ function setupInitialEvents() {
     const btnSettings = document.getElementById('btn-settings');
     const searchBar = document.getElementById('search-bar');
     const details = document.querySelector('.current-details');
-    btnAdd?.addEventListener('click', () => {
-        if (searchBar) {
-            // La propriété .hidden est un booléen HTML simple (vrai ou faux)
-            searchBar.hidden = !searchBar.hidden;
-            console.log("Barre de recherche basculée. État caché :", searchBar.hidden);
-        }
-    });
     // Action du bouton Settings (Filtres)
     btnSettings?.addEventListener('click', (e) => {
         e.preventDefault();
-        // Pour l'instant, on simule le filtre en cachant/montrant les détails
         if (details) {
             details.classList.toggle('hidden');
             console.log("Filtres activés");
