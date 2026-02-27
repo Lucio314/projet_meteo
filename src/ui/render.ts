@@ -48,7 +48,7 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
       </div>
         <div class="toolbar">
           <button id="btn-add-city" class="circle-btn" title="Ajouter une ville">➕</button>
-          <button id="btn-settings" class="circle-btn" title="Paramètres">⏳</button>
+          <button id="btn-settings" class="circle-btn" title="Paramètres">⚛️</button>
 
           <div id="filter-menu" class="hidden">
               <p>Afficher :</p>
