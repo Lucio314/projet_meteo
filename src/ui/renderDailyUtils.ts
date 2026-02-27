@@ -1,9 +1,9 @@
 
 // ================= DAILY CARD COMPONENT =================
 
-import { DailyWeather } from "../models/weather";
-import { getWeatherDescription } from "../utils/weatherInterpreter";
-import { analyzeWeatherTrend } from "../utils/weatherTrend";
+import { DailyWeather } from "../models/weather.js";
+import { getWeatherDescription } from "../utils/weatherInterpreter.js";
+import { analyzeWeatherTrend } from "../utils/weatherTrend.js";
 
 function createDailyCard(date: string, code: number, max: number, min: number): string {
 
