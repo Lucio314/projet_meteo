@@ -1,6 +1,7 @@
 import { fetchWeather } from "./api/openMeteo.js";
 import { renderCurrent, renderHourly } from "./ui/render.js";
 import { renderDailyMorino } from "./ui/renderDailyUtils.js";
+import { renderCurrent, renderDaily, renderHourly, } from "./ui/render.js";
 const BLOIS_LAT = 47.5943;
 const BLOIS_LON = 1.3291;
 async function init() {

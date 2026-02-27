@@ -9,6 +9,8 @@ async function init() {
   const currentEl = document.getElementById("current")!;
   const dailyEl = document.getElementById("daily")!;
   const hourlyEl = document.getElementById("hourly")!;
+  
+
 
   try {
     const data = await fetchWeather(BLOIS_LAT, BLOIS_LON);
