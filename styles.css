@@ -3,8 +3,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "System UI", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-weight: large;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 body {
@@ -31,9 +30,7 @@ body {
 
 h1 {
   font-size: 28px;
-  margin: 0;
   color: #f9fafb;
-  white-space: nowrap;
 }
 
 h2 {
@@ -51,90 +48,99 @@ h2 {
   padding: 18px;
   margin-bottom: 18px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.daily-row {
+.current-main {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
-.daily-container {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 10px 0;
-  width: 100%;
+.current-temp {
+  font-size: 48px;
+  font-weight: bold;
 }
 
-.daily-card {
-  background: rgba(30, 41, 59, 0.6);
-  border-radius: 8px;
+#filter-menu {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.5);
   padding: 15px;
-  min-width: 120px;
-  text-align: center;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  flex-shrink: 0;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
 }
 
-.max { font-weight: bold; color: #ff4500; display: block; }
-.min { color: #007bff; display: block; }
+#filter-menu p {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #3b82f6;
+}
 
-p {
+.filter-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.filter-options label {
   font-size: 14px;
-  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
   color: #cbd5f5;
 }
 
-button {
-  background: #3b82f6;
-  border: none;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 8px;
+.filter-options input {
   cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s ease;
 }
 
-button:hover {
-  background: #2563eb;
+.current-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-input,
-select {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  color: #e5e7eb;
-  padding: 8px;
-  border-radius: 8px;
-  outline: none;
+.current-details p {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.value {
+  font-weight: bold;
+  color: #f9fafb;
 }
 
 .toolbar {
   display: flex;
-  flex-direction: row;
   gap: 12px;
-  align-items: center;
 }
 
 .circle-btn {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 1px solid rgba(148, 163, 184, 0.3);
   background: rgba(30, 41, 59, 0.8);
   color: #e5e7eb;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: 0.3s ease;
 }
 
 .circle-btn:hover {
   background: #3b82f6;
   transform: scale(1.1);
+  border-color: #3b82f6;
 }
 
 #search-bar {
@@ -142,52 +148,33 @@ select {
   justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
-  width: 100%;
 }
 
-.hidden-menu {
-  position: absolute;
-  background: #1e293b;
-  border: 1px solid #3b82f6;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  z-index: 100;
-}
-
-.hourly-row {
+.daily-container, .hourly-row {
   display: flex;
-  gap: 18px;
-  list-style: none;
+  gap: 12px;
   overflow-x: auto;
   padding: 10px 0;
 }
 
-.hourly-row li {
-  min-width: 70px;
-  text-align: center;
+.daily-card, .hourly-row li {
   background: rgba(30, 41, 59, 0.6);
-  padding: 8px;
   border-radius: 8px;
+  padding: 15px;
+  min-width: 100px;
+  text-align: center;
   flex-shrink: 0;
 }
 
-.current-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.current-temp {
-  font-size: 42px;
-}
-
 .hidden {
-  display: none;
+  display: none !important;
 }
+
+.max { font-weight: bold; color: #ff4500; }
+.min { color: #60a5fa; }
 
 @media (max-width: 600px) {
-  .header {
-    flex-wrap: wrap;
-  }
+  .header { flex-wrap: wrap; }
+  .current-main { flex-direction: column; gap: 15px; text-align: center; }
 }
+

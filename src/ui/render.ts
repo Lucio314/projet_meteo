@@ -4,19 +4,29 @@ import type { CurrentWeather, DailyWeather, HourlyWeather } from "../models/weat
 
 
 function setupInitialEvents() {
-  const btnAdd = document.getElementById('btn-add-city');
   const btnSettings = document.getElementById('btn-settings');
-  const searchBar = document.getElementById('search-bar');
-  const details = document.querySelector('.current-details');
+  const filterMenu = document.getElementById('filter-menu');
 
-
-  // Action du bouton Settings (Filtres)
   btnSettings?.addEventListener('click', (e) => {
     e.preventDefault();
-    
-    if (details) {
-      details.classList.toggle('hidden');
-      console.log("Filtres activés");
+    filterMenu?.classList.toggle('hidden');
+  });
+
+  const filters = [
+    { cb: 'check-ressenti', row: 'info-ressenti' },
+    { cb: 'check-humidite', row: 'info-humidite' },
+    { cb: 'check-precip', row: 'info-precip' },
+    { cb: 'check-vent', row: 'info-vent' }
+  ];
+
+  filters.forEach(item => {
+    const checkbox = document.getElementById(item.cb) as HTMLInputElement;
+    const infoRow = document.getElementById(item.row);
+
+    if (checkbox && infoRow) {
+      checkbox.onchange = () => {
+        infoRow.style.display = checkbox.checked ? 'flex' : 'none';
+      };
     }
   });
 }
@@ -38,17 +48,29 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
       </div>
         <div class="toolbar">
           <button id="btn-add-city" class="circle-btn" title="Ajouter une ville">➕</button>
-          <button id="btn-settings" class="circle-btn" title="Paramètres">⚙️</button>
-        </div>
+          <button id="btn-settings" class="circle-btn" title="Paramètres">⏳</button>
+
+          <div id="filter-menu" class="hidden">
+              <p>Afficher :</p>
+              <div class="filter-options">
+              <label><input type="checkbox" id="check-ressenti" checked> Ressenti</label>
+              <label><input type="checkbox" id="check-humidite" checked> Humidité</label>
+              <label><input type="checkbox" id="check-precip" checked> Précipitations</label>
+              
+              </div>
+          </div>
+
+    <div class="current-details ">
+      <p id="info-heure">Heure : <span class="value">${data.time.split("T")[1]}</span></p>
+      <p id="info-ressenti">Ressenti : <span class="value">${data.apparent_temperature} °C</span></p>
+      <p id="info-humidite">Humidité : <span class="value">${data.relative_humidity_2m} %</span></p>
+      <p id="info-precip">Précipitations : <span class="value">${data.precipitation} mm</span></p>
       
     </div>
 
-    <div class="current-details hidden">
-      <p>Ressenti : <span class="value">${data.apparent_temperature} °C</span></p>
-      <p>Humidité : <span class="value">${data.relative_humidity_2m} %</span></p>
-      <p>Précipitations : <span class="value">${data.precipitation} mm</span></p>
-      <p>Heure : ${data.time.split("T")[1]}</p>
+      
     </div>
+
   `;
   setupInitialEvents();
 }
@@ -60,7 +82,7 @@ export function renderCurrent(el: HTMLElement, data: CurrentWeather) {
 export function renderDaily(el: HTMLElement, data: DailyWeather) {
   // On génère le HTML pour chaque jour (data.time contient les 7 dates)
   const dailyHtml = data.time.map((date, i) => {
-    // On formate un peu la date pour qu'elle soit plus jolie (ex: 2024-03-12)
+    
     const shortDate = date.split("-").slice(1).join("/"); 
     const description = getWeatherDescription(data.weather_code[i]);
 
