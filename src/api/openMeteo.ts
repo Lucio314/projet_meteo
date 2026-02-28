@@ -11,7 +11,7 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherRes
     `&timezone=auto` + `&forecast_days=14`;
 
   const res = await fetch(url);
-  console.log(url);
+
   
 
   if (!res.ok) {

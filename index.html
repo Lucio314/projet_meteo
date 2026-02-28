@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="UTF-8" />
   <title>Météo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
+</head>
 <body>
-
   <div class="container">
 
     <header class="header">
       <h1 id="main-title">Météo – Blois</h1>
-      <div id="controls"></div>
+      <input type="text" id="city-input" placeholder="Rechercher une ville..." />
     </header>
 
     <section class="current-weather">
       <div id="current"></div>
     </section>
-    
+
     <section class="daily-row">
       <div id="daily"></div>
     </section>
@@ -31,13 +30,7 @@
       <canvas id="chart"></canvas>
     </section>
 
-
-
-    
-
   </div>
-
   <script type="module" src="dist/main.js"></script>
 </body>
-
 </html>
