@@ -6,5 +6,6 @@ export async function geocodeLocation(query: string): Promise<GeocodingResponse[
   const url = `${GEOCODING_URL}?q=${encodeURIComponent(query)}&format=json&limit=5`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Erreur géocoding: ${res.status} ${res.statusText}`);
-  return res.json();
+    return res.json();
+    
 }
