@@ -1,7 +1,9 @@
 export interface GeocodingResponse {
-  display_name: string;
+  name: string;
   lat: string;
   lon: string;
-  region: string;
+  display_name: string;
+  address?: {
+    state?: string;
+  };
 }
-
