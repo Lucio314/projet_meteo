@@ -153,68 +153,27 @@ async function init() {
     }
   };
 
-  document.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-    if (!target.classList.contains("toggle-details")) return;
-    const details = target.closest(".current-main")?.nextElementSibling as HTMLElement;
-    if (!details?.classList.contains("current-details")) return;
-    const hidden = details.classList.toggle("hidden");
-    target.textContent = hidden ? "Voir plus" : "Voir moins";
-  });
+
   // on change les modes d'affichage (region ou bounding box) 
-  /*     <!-- Sélecteur de mode -->
-    <div class="mode-selector">
-      <button class="mode-btn active" data-mode="name">Ville</button>
-      <button class="mode-btn" data-mode="coords">Coordonnées</button>
-      <button class="mode-btn" data-mode="bbox">Bounding box</button>
-      <button class="mode-btn" data-mode="region">Région</button>
-    </div>
+ 
 
-    <!-- Mode nom de ville -->
-    <div id="mode-name"   class="mode-panel">
-      <input type="text" id="city-input" placeholder="Rechercher une ville..." />
-      <button id="btn-add-location">Ajouter</button>
-    </div>
-
-    <!-- Mode coordonnées -->
-    <div id="mode-coords" class="mode-panel hidden">
-      <input type="number" id="lat-input" placeholder="Latitude" min="-90" max="90" step="0.0001" />
-      <input type="number" id="lon-input" placeholder="Longitude" min="-180" max="180" step="0.0001" />
-      <button id="btn-add-coords">Ajouter</button>
-    </div>
-
-    <!-- Mode bounding box -->
-    <div id="mode-bbox" class="mode-panel hidden">
-      <input type="number" id="min-lat" placeholder="Lat min" min="-90" max="90" step="0.0001" />
-      <input type="number" id="max-lat" placeholder="Lat max" min="-90" max="90" step="0.0001" />
-      <input type="number" id="min-lon" placeholder="Lon min" min="-180" max="180" step="0.0001" />
-      <input type="number" id="max-lon" placeholder="Lon max" min="-180" max="180" step="0.0001" />
-      <button id="btn-filter-bbox">Filtrer</button>
-    </div>
-
-    <!-- Mode région -->
-    <div id="mode-region" class="mode-panel hidden">
-      <input type="text" id="region-input" placeholder="Nom de région ou département..." />
-      <button id="btn-filter-region">Filtrer</button>
-    </div>
-
-    <!-- Résultats filtrés -->
-    <div id="filter-results" class="hidden"></div>*/
   const modeButtons = document.querySelectorAll(".mode-btn");
-  modeButtons.forEach(btn => {
-    (btn as HTMLElement).onclick = () => {
-      modeButtons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const mode = btn.getAttribute("data-mode");
-      document.querySelectorAll(".mode-panel").forEach(panel => {
-        if (panel.id === `mode-${mode}`) {
-          panel.classList.remove("hidden");
-        } else {
-          panel.classList.add("hidden");
-        }
-      });
-    };
-  });
+modeButtons.forEach(btn => {
+  (btn as HTMLElement).onclick = () => {
+    modeButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const mode = btn.getAttribute("data-mode");
+    document.querySelectorAll(".mode-panel").forEach(panel => {
+      if (panel.id === `mode-${mode}`) {
+        panel.classList.remove("hidden");
+      } else {
+        panel.classList.add("hidden");
+      }
+    });
+    // Cacher le bouton reset quand on change de mode
+    document.getElementById("filter-results")?.classList.add("hidden");
+  };
+});
 
   // filtrage par bounding box (on teste les villes de france avec 45 51 -5 10)
   const btnFilterBbox = document.getElementById("btn-filter-bbox")!;
@@ -225,6 +184,10 @@ async function init() {
     const maxLon = parseFloat((document.getElementById("max-lon") as HTMLInputElement).value);
     if ([minLat, maxLat, minLon, maxLon].some(v => isNaN(v))) {
       alert("Veuillez entrer des coordonnées valides.");
+      return;
+    }
+    if (minLat > maxLat || minLon > maxLon) {
+      alert("Les valeurs minimales doivent être inférieures aux valeurs maximales.");
       return;
     }
     const filtered = locations.filter(loc => loc.lat >= minLat && loc.lat <= maxLat && loc.lon >= minLon && loc.lon <= maxLon);
@@ -255,7 +218,7 @@ async function init() {
       alert("Veuillez entrer un nom de région ou département.");
       return;
     }
-    const filtered = locations.filter(loc => loc?.region.toLowerCase().includes(regionQuery));
+    const filtered = locations.filter(loc => loc?.name.toLowerCase().includes(regionQuery));
     if (filtered.length === 0) {
       alert("Aucune location trouvée pour cette région.");
       return;

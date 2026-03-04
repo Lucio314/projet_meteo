@@ -1,18 +1,25 @@
 import type { DailyWeather } from "../models/weather.js";
-import { getWeatherDescription } from "../utils/weatherInterpreter.js";
+import { formatDate } from "../utils/formData.js";
+import { getWeatherDescription, getWeatherEmoji } from "../utils/weatherInterpreter.js";
 import { analyzeWeatherTrend } from "../utils/weatherTrend.js";
 
 function createDailyCard(date: string, code: number, max: number, min: number): string {
+  const { day, num } = formatDate(date);
+  const today = num === new Date().getDate().toString() ? "Aujour." : day;
+
+
   return `
     <div class="day-card">
-      <p class="day-date">${date}</p>
-      <p>${getWeatherDescription(code)}</p>
-      <p>Max : <span class="value">${max} °C</span></p>
-      <p>Min : <span class="value">${min} °C</span></p>
+      <div class="day-header">
+        <span class="day-num">${num}</span>
+        <span class="day-name">${today}</span>
+      </div>
+      <p class="day-desc" title="${getWeatherDescription(code)}">${getWeatherEmoji(code)}</p>
+      <p class="day-max">${max}°</p>
+      <p class="day-min">${min}°</p>
     </div>
   `;
 }
-
 function renderDailyCards(dates: string[], codes: number[], maxTemps: number[], minTemps: number[]): string {
   return dates.map((date, i) => createDailyCard(date, codes[i], maxTemps[i], minTemps[i])).join("");
 }
