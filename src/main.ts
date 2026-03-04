@@ -93,87 +93,74 @@ function renderTabs(locations: Location[]) {
 
 async function init() {
   const cityInput = document.getElementById("city-input") as HTMLInputElement;
-  // cityInput.onchange = async () => {
-  //   const query = cityInput.value.trim();
-  //   if (!query) return;
-  //   try {
-  //     const results = await geocodeLocation(query);
-  //     if (results.length === 0) { alert("Aucun résultat trouvé."); return; }
-  //     addLocation({ name: results[0].display_name, lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon), region: results[0].address?.state || "Inconnu" });
-  //     renderTabs(locations);
-  //     cityInput.value = "";
-  //   } catch (err) {
-  //     alert("Erreur lors de la recherche.");
-  //     console.error(err);
-  //   }
-
-  // };
   // Handler du bouton Ajouter
   const latInput = document.getElementById("lat-input") as HTMLInputElement;
   const lonInput = document.getElementById("lon-input") as HTMLInputElement;
-  const btnAdd = document.getElementById("btn-add-location")!;
-  btnAdd.onclick = async () => {
+  const addTabByCoords = document.getElementById("btn-add-coords")!;
+  const addTabByLocation = document.getElementById("btn-add-location")!;
+  addTabByLocation.onclick = async () => {
     const cityQuery = cityInput.value.trim();
+    // cas nom de ville
+    try {
+      const results = await geocodeLocation(cityQuery);
+      if (results.length === 0) { alert("Aucun résultat trouvé."); return; }
+      const lat = parseFloat(results[0].lat);
+      const lon = parseFloat(results[0].lon);
+      const { name, region } = await reverseGeocode(lat, lon);
+      addLocation({ name: name, lat, lon, region });
+      renderTabs(locations);
+      cityInput.value = "";
+    } catch (err) {
+      window.alert("Erreur lors de la recherche.");
+      console.error(err);
+    }
+
+
+  };
+
+  addTabByCoords.onclick = async () => {
     const latVal = latInput.value.trim();
     const lonVal = lonInput.value.trim();
-
-
-    if (cityQuery) {
-      // cas nom de ville
-      try {
-        const results = await geocodeLocation(cityQuery);
-        if (results.length === 0) { alert("Aucun résultat trouvé."); return; }
-        const lat = parseFloat(results[0].lat);
-        const lon = parseFloat(results[0].lon);
-        const { name, region } = await reverseGeocode(lat, lon);
-        addLocation({ name: name, lat, lon, region });
-        renderTabs(locations);
-        cityInput.value = "";
-      } catch (err) {
-        alert("Erreur lors de la recherche.");
-        console.error(err);
-      }
-
-    } else if (latVal && lonVal) {
-      // cas coordonnées
-      const lat = parseFloat(latVal);
-      const lon = parseFloat(lonVal);
-      if (isNaN(lat) || isNaN(lon)) {
-        alert("Coordonnées invalides.");
-        return;
-      }
-      const { name, region } = await reverseGeocode(lat, lon);
-      addLocation({ name, lat, lon, region });
-      renderTabs(locations);
-      latInput.value = "";
-      lonInput.value = "";
-
-    } else {
-      alert("Entrez un nom de ville ou des coordonnées.");
+    // cas coordonnées
+    const lat = parseFloat(latVal);
+    const lon = parseFloat(lonVal);
+    if (isNaN(lat) || isNaN(lon)) {
+      alert("Coordonnées invalides.");
+      return;
     }
-  };
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      alert("Les coordonnées doivent être dans les limites valides (lat: -90 à 90, lon: -180 à 180).");
+      return;
+    }
+    const { name, region } = await reverseGeocode(lat, lon);
+    addLocation({ name, lat, lon, region });
+    renderTabs(locations);
+    latInput.value = "";
+    lonInput.value = "";
 
+    alert("Entrez un nom de ville ou des coordonnées.");
+  }
 
   // on change les modes d'affichage (region ou bounding box) 
- 
+
 
   const modeButtons = document.querySelectorAll(".mode-btn");
-modeButtons.forEach(btn => {
-  (btn as HTMLElement).onclick = () => {
-    modeButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    const mode = btn.getAttribute("data-mode");
-    document.querySelectorAll(".mode-panel").forEach(panel => {
-      if (panel.id === `mode-${mode}`) {
-        panel.classList.remove("hidden");
-      } else {
-        panel.classList.add("hidden");
-      }
-    });
-    // Cacher le bouton reset quand on change de mode
-    document.getElementById("filter-results")?.classList.add("hidden");
-  };
-});
+  modeButtons.forEach(btn => {
+    (btn as HTMLElement).onclick = () => {
+      modeButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const mode = btn.getAttribute("data-mode");
+      document.querySelectorAll(".mode-panel").forEach(panel => {
+        if (panel.id === `mode-${mode}`) {
+          panel.classList.remove("hidden");
+        } else {
+          panel.classList.add("hidden");
+        }
+      });
+      // Cacher le bouton reset quand on change de mode
+      document.getElementById("filter-results")?.classList.add("hidden");
+    };
+  });
 
   // filtrage par bounding box (on teste les villes de france avec 45 51 -5 10)
   const btnFilterBbox = document.getElementById("btn-filter-bbox")!;
@@ -218,7 +205,11 @@ modeButtons.forEach(btn => {
       alert("Veuillez entrer un nom de région ou département.");
       return;
     }
-    const filtered = locations.filter(loc => loc?.name.toLowerCase().includes(regionQuery));
+    console.log(locations);
+    // il y a des locations sans régions, on les filtre d'abord pour éviter les erreurs de type "cannot read property toLowerCase of undefined"
+    const locationsWithRegion = locations.filter(loc => loc?.region);
+    const filtered = locationsWithRegion.filter(loc => loc?.region.toLowerCase().includes(regionQuery));
+    console.log("Locations filtrées :", filtered);
     if (filtered.length === 0) {
       alert("Aucune location trouvée pour cette région.");
       return;

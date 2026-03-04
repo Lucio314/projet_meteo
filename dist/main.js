@@ -81,65 +81,52 @@ function renderTabs(locations) {
 }
 async function init() {
     const cityInput = document.getElementById("city-input");
-    // cityInput.onchange = async () => {
-    //   const query = cityInput.value.trim();
-    //   if (!query) return;
-    //   try {
-    //     const results = await geocodeLocation(query);
-    //     if (results.length === 0) { alert("Aucun résultat trouvé."); return; }
-    //     addLocation({ name: results[0].display_name, lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon), region: results[0].address?.state || "Inconnu" });
-    //     renderTabs(locations);
-    //     cityInput.value = "";
-    //   } catch (err) {
-    //     alert("Erreur lors de la recherche.");
-    //     console.error(err);
-    //   }
-    // };
     // Handler du bouton Ajouter
     const latInput = document.getElementById("lat-input");
     const lonInput = document.getElementById("lon-input");
-    const btnAdd = document.getElementById("btn-add-location");
-    btnAdd.onclick = async () => {
+    const addTabByCoords = document.getElementById("btn-add-coords");
+    const addTabByLocation = document.getElementById("btn-add-location");
+    addTabByLocation.onclick = async () => {
         const cityQuery = cityInput.value.trim();
-        const latVal = latInput.value.trim();
-        const lonVal = lonInput.value.trim();
-        if (cityQuery) {
-            // cas nom de ville
-            try {
-                const results = await geocodeLocation(cityQuery);
-                if (results.length === 0) {
-                    alert("Aucun résultat trouvé.");
-                    return;
-                }
-                const lat = parseFloat(results[0].lat);
-                const lon = parseFloat(results[0].lon);
-                const { name, region } = await reverseGeocode(lat, lon);
-                addLocation({ name: name, lat, lon, region });
-                renderTabs(locations);
-                cityInput.value = "";
-            }
-            catch (err) {
-                alert("Erreur lors de la recherche.");
-                console.error(err);
-            }
-        }
-        else if (latVal && lonVal) {
-            // cas coordonnées
-            const lat = parseFloat(latVal);
-            const lon = parseFloat(lonVal);
-            if (isNaN(lat) || isNaN(lon)) {
-                alert("Coordonnées invalides.");
+        // cas nom de ville
+        try {
+            const results = await geocodeLocation(cityQuery);
+            if (results.length === 0) {
+                alert("Aucun résultat trouvé.");
                 return;
             }
+            const lat = parseFloat(results[0].lat);
+            const lon = parseFloat(results[0].lon);
             const { name, region } = await reverseGeocode(lat, lon);
-            addLocation({ name, lat, lon, region });
+            addLocation({ name: name, lat, lon, region });
             renderTabs(locations);
-            latInput.value = "";
-            lonInput.value = "";
+            cityInput.value = "";
         }
-        else {
-            alert("Entrez un nom de ville ou des coordonnées.");
+        catch (err) {
+            window.alert("Erreur lors de la recherche.");
+            console.error(err);
         }
+    };
+    addTabByCoords.onclick = async () => {
+        const latVal = latInput.value.trim();
+        const lonVal = lonInput.value.trim();
+        // cas coordonnées
+        const lat = parseFloat(latVal);
+        const lon = parseFloat(lonVal);
+        if (isNaN(lat) || isNaN(lon)) {
+            alert("Coordonnées invalides.");
+            return;
+        }
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            alert("Les coordonnées doivent être dans les limites valides (lat: -90 à 90, lon: -180 à 180).");
+            return;
+        }
+        const { name, region } = await reverseGeocode(lat, lon);
+        addLocation({ name, lat, lon, region });
+        renderTabs(locations);
+        latInput.value = "";
+        lonInput.value = "";
+        alert("Entrez un nom de ville ou des coordonnées.");
     };
     // on change les modes d'affichage (region ou bounding box) 
     const modeButtons = document.querySelectorAll(".mode-btn");
@@ -202,7 +189,11 @@ async function init() {
             alert("Veuillez entrer un nom de région ou département.");
             return;
         }
-        const filtered = locations.filter(loc => loc?.name.toLowerCase().includes(regionQuery));
+        console.log(locations);
+        // il y a des locations sans régions, on les filtre d'abord pour éviter les erreurs de type "cannot read property toLowerCase of undefined"
+        const locationsWithRegion = locations.filter(loc => loc?.region);
+        const filtered = locationsWithRegion.filter(loc => loc?.region.toLowerCase().includes(regionQuery));
+        console.log("Locations filtrées :", filtered);
         if (filtered.length === 0) {
             alert("Aucune location trouvée pour cette région.");
             return;
