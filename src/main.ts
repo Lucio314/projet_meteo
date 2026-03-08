@@ -73,7 +73,12 @@ function renderTabs(locations: Location[]) {
       tab.classList.add("active");
       loadWeather(loc.lat, loc.lon, loc.name);
     };
+    // par défaut on active la dernière location ajoutée
+    if (index === locations.length - 1) {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      tab.classList.add("active");
 
+    }
     if (index > 0) {
       const closeBtn = document.createElement("span");
       closeBtn.textContent = " ✕";
@@ -205,11 +210,8 @@ async function init() {
       alert("Veuillez entrer un nom de région ou département.");
       return;
     }
-    console.log(locations);
-    // il y a des locations sans régions, on les filtre d'abord pour éviter les erreurs de type "cannot read property toLowerCase of undefined"
-    const locationsWithRegion = locations.filter(loc => loc?.region);
-    const filtered = locationsWithRegion.filter(loc => loc?.region.toLowerCase().includes(regionQuery));
-    console.log("Locations filtrées :", filtered);
+    const filtered = locations.filter(loc => loc?.region?.toLowerCase().includes(regionQuery));
+    
     if (filtered.length === 0) {
       alert("Aucune location trouvée pour cette région.");
       return;
