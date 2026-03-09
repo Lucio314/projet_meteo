@@ -3,6 +3,7 @@ import { renderCurrent, renderHourly } from "./ui/render.js";
 import { renderDaily } from "./ui/renderDailyUtils.js";
 import { loadLocations, saveLocations } from "./utils/locationUtils.js";
 import { fetchWeatherCached } from "./api/openMeteo.js";
+import { renderWeatherChart } from "./ui/chart.js";
 const BLOIS_LAT = 47.5943;
 const BLOIS_LON = 1.3291;
 const blois = { name: "Blois", lat: BLOIS_LAT, lon: BLOIS_LON, region: "Centre-Val de Loire" };
@@ -20,6 +21,7 @@ async function loadWeather(lat, lon, cityName) {
     renderCurrent(currentEl, data.current);
     renderDaily(dailyEl, data.daily);
     renderHourly(hourlyEl, data.hourly, data.current.time);
+    renderWeatherChart("chart", data.hourly, data.current.time);
     if (mainTitle)
         mainTitle.textContent = `Météo – ${cityName}`;
 }
