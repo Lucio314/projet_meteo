@@ -16,6 +16,17 @@ export function getWeatherDescription(code: number): string {
 
   return "Conditions inconnues";
 }
+export function getWeatherEmoji(code: number): string {
+  if (code === 0) return "☀️";
+  if ([1, 2].includes(code)) return "🌤️";
+  if (code === 3) return "☁️";
+  if ([45, 48].includes(code)) return "🌫️";
+  if ([51, 53, 55, 56, 57].includes(code)) return "🌦️";
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️";
+  if ([95, 96, 99].includes(code)) return "⛈️";
+  return "🌡️";
+}
 
 // Score de 0 à 7  en fonction des codes météo, pour faciliter l'analyse des tendances météo
 

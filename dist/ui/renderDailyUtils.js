@@ -1,25 +1,27 @@
-// ================= DAILY CARD COMPONENT =================
-import { getWeatherDescription } from "../utils/weatherInterpreter.js";
+import { formatDate } from "../utils/formData.js";
+import { getWeatherDescription, getWeatherEmoji } from "../utils/weatherInterpreter.js";
 import { analyzeWeatherTrend } from "../utils/weatherTrend.js";
 function createDailyCard(date, code, max, min) {
+    const { day, num } = formatDate(date);
+    const today = num === new Date().getDate().toString() ? "Aujour." : day;
     return `
     <div class="day-card">
-      <p class="day-date">${date}</p>
-      <p>${getWeatherDescription(code)}</p>
-      <p>Max : <span class="value">${max} °C</span></p>
-      <p>Min : <span class="value">${min} °C</span></p>
-     
+      <div class="day-header">
+        <span class="day-num">${num}</span>
+        <span class="day-name">${today}</span>
+      </div>
+      <p class="day-desc" title="${getWeatherDescription(code)}">${getWeatherEmoji(code)}</p>
+      <p class="day-max">${max}°</p>
+      <p class="day-min">${min}°</p>
     </div>
   `;
 }
-// ================= DAILY CARDS RENDERER =================
 function renderDailyCards(dates, codes, maxTemps, minTemps) {
     return dates.map((date, i) => createDailyCard(date, codes[i], maxTemps[i], minTemps[i])).join("");
 }
-// ================= DAILY WEATHER =================
-export function renderDailyMorino(el, data) {
+export function renderDaily(el, data) {
     let currentBlock = 0;
-    const blockCount = Math.ceil(data.time.length / 7); // On affiche 7 jours par bloc
+    const blockCount = Math.ceil(data.time.length / 7);
     function updateView() {
         const start = currentBlock * 7;
         const end = start + 7;
@@ -35,16 +37,15 @@ export function renderDailyMorino(el, data) {
         <h2>Prévisions — Semaine ${currentBlock + 1}</h2>
         <button class="next-block" ${currentBlock === blockCount - 1 ? "disabled" : ""}>▶</button>
       </div>
-
       <p class="trend">Tendance : <span class="value">${trend}</span></p>
       <div class="days-grid">${cardsHtml}</div>
     `;
         el.querySelector(".prev-block")?.addEventListener("click", () => {
-            currentBlock--;
+            currentBlock = Math.max(0, currentBlock - 1);
             updateView();
         });
         el.querySelector(".next-block")?.addEventListener("click", () => {
-            currentBlock++;
+            currentBlock = Math.min(blockCount - 1, currentBlock + 1);
             updateView();
         });
     }
