@@ -8,23 +8,64 @@
 </head>
 <body>
   <div class="container">
-
     <header class="header">
-      <h1 id="main-title">Météo – Blois</h1>
-      <input type="text" id="city-input" placeholder="Rechercher une ville..." />
+      <h1 id="main-title">Météo</h1>
     </header>
+
+    <!-- Sélecteur de mode -->
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="name">Ville</button>
+      <button class="mode-btn" data-mode="coords">Coordonnées</button>
+      <button class="mode-btn" data-mode="bbox">Bounding box</button>
+      <button class="mode-btn" data-mode="region">Région</button>
+    </div>
+
+    <!-- Mode nom de ville -->
+    <div id="mode-name"   class="mode-panel">
+      <input type="text" id="city-input" placeholder="Rechercher une ville..." />
+      <button id="btn-add-location">Ajouter</button>
+    </div>
+
+    <!-- Mode coordonnées -->
+    <div id="mode-coords" class="mode-panel hidden">
+      <input type="number" id="lat-input" placeholder="Latitude" min="-90" max="90" step="0.0001" />
+      <input type="number" id="lon-input" placeholder="Longitude" min="-180" max="180" step="0.0001" />
+      <button id="btn-add-coords">Ajouter</button>
+    </div>
+
+    <!-- Mode bounding box -->
+    <div id="mode-bbox" class="mode-panel hidden">
+      <input type="number" id="min-lat" placeholder="Lat min" min="-90" max="90" step="0.0001" />
+      <input type="number" id="max-lat" placeholder="Lat max" min="-90" max="90" step="0.0001" />
+      <input type="number" id="min-lon" placeholder="Lon min" min="-180" max="180" step="0.0001" />
+      <input type="number" id="max-lon" placeholder="Lon max" min="-180" max="180" step="0.0001" />
+      <button id="btn-filter-bbox">Filtrer</button>
+    </div>
+
+    <!-- Mode région -->
+    <div id="mode-region" class="mode-panel hidden">
+      <input type="text" id="region-input" placeholder="Nom de région ou département..." />
+      <button id="btn-filter-region">Filtrer</button>
+    </div>
+
+    <!-- Résultats filtrés -->
+    <div id="filter-results" class="hidden"></div>
+
+    <!-- Onglets -->
+    <div id="tabs" class="tabs"></div>
 
     <section class="current-weather">
       <div id="current"></div>
     </section>
-
+        <section class="hourly-list">
+      <div id="hourly"></div>
+    </section>
     <section class="daily-row">
       <div id="daily"></div>
     </section>
 
-    <section class="hourly-list">
-      <div id="hourly"></div>
-    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <section class="chart-container">
       <canvas id="chart"></canvas>

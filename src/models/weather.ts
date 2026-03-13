@@ -32,3 +32,8 @@ export interface WeatherResponse {
   hourly: HourlyWeather;
   daily: DailyWeather;
 }
+// Servira pour stocker les données météo en cache avec un timestamp pour la validation de la durée de vie
+export interface CacheEntry {
+  data: WeatherResponse;
+  cachedAt: number; // instant de la mise en cache
+}
