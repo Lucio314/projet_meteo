@@ -2,14 +2,15 @@ import type { DailyWeather } from "../models/weather.js";
 import { formatDate } from "../utils/formData.js";
 import { getWeatherDescription, getWeatherEmoji } from "../utils/weatherInterpreter.js";
 import { analyzeWeatherTrend } from "../utils/weatherTrend.js";
+import { renderWeatherChart } from "./chart.js";
+import { renderHourly } from "./render.js";
 
 function createDailyCard(date: string, code: number, max: number, min: number): string {
   const { day, num } = formatDate(date);
   const today = num === new Date().getDate().toString() ? "Aujour." : day;
 
-
   return `
-    <div class="day-card">
+    <div class="day-card" data-date="${date}">
       <div class="day-header">
         <span class="day-num">${num}</span>
         <span class="day-name">${today}</span>
@@ -20,21 +21,35 @@ function createDailyCard(date: string, code: number, max: number, min: number): 
     </div>
   `;
 }
-function renderDailyCards(dates: string[], codes: number[], maxTemps: number[], minTemps: number[]): string {
-  return dates.map((date, i) => createDailyCard(date, codes[i], maxTemps[i], minTemps[i])).join("");
+
+function renderDailyCards(
+  dates: string[],
+  codes: number[],
+  maxTemps: number[],
+  minTemps: number[]
+): string {
+  return dates.map((date, i) =>
+    createDailyCard(date, codes[i], maxTemps[i], minTemps[i])
+  ).join("");
 }
 
 export function renderDaily(el: HTMLElement, data: DailyWeather) {
+
   let currentBlock = 0;
   const blockCount = Math.ceil(data.time.length / 7);
 
+  const hourlyEl = document.getElementById("hourly")!;
+
   function updateView() {
+
     const start = currentBlock * 7;
     const end = start + 7;
+
     const dates = data.time.slice(start, end);
     const codes = data.weather_code.slice(start, end);
     const maxTemps = data.temperature_2m_max.slice(start, end);
     const minTemps = data.temperature_2m_min.slice(start, end);
+
     const trend = analyzeWeatherTrend(codes);
     const cardsHtml = renderDailyCards(dates, codes, maxTemps, minTemps);
 
@@ -52,10 +67,46 @@ export function renderDaily(el: HTMLElement, data: DailyWeather) {
       currentBlock = Math.max(0, currentBlock - 1);
       updateView();
     });
+
     el.querySelector(".next-block")?.addEventListener("click", () => {
       currentBlock = Math.min(blockCount - 1, currentBlock + 1);
       updateView();
     });
+
+    el.querySelectorAll(".day-card").forEach(card => {
+
+      card.addEventListener("click", () => {
+
+        const selectedDate = (card as HTMLElement).dataset.date!;
+        const weatherData = (window as any).weatherData;
+
+        const today = new Date().toISOString().split("T")[0];
+
+        let startTime;
+
+        if (selectedDate === today) {
+          startTime = weatherData.current.time;
+        } else {
+          startTime = `${selectedDate}T00:00`;
+        }
+
+        renderHourly(hourlyEl, weatherData.hourly, startTime);
+        renderWeatherChart("chart", weatherData.hourly, startTime);
+
+        // highlight sur le jour sélectionné
+        el.querySelectorAll(".day-card").forEach(c =>
+          c.classList.remove("selected")
+        );
+
+        (card as HTMLElement).classList.add("selected");
+
+        renderHourly(hourlyEl, weatherData.hourly, selectedDate);
+        renderWeatherChart("chart", weatherData.hourly, selectedDate);
+
+      });
+
+    });
+
   }
 
   updateView();

@@ -246,6 +246,17 @@ p {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
+}
+
+.day-card.selected {
+  border: 2px solid #3b82f6;
+  background: rgba(59,130,246,0.15);
+}
+
+.day-card:hover{
+   border: 2px solid #3b82f6;
+  background: rgba(59,130,246,0.15);
 }
 
 .day-header {
