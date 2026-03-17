@@ -59,7 +59,7 @@ export function renderWeatherChart(canvasId: string, data: HourlyWeather, curren
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            //maintainAspectRatio: false,
             scales: {
                 y: {// axe gauche temp
                     type: 'linear',
@@ -81,16 +81,7 @@ export function renderWeatherChart(canvasId: string, data: HourlyWeather, curren
                     display: true, 
                     labels: { color: '#aaa', usePointStyle: true, boxWidth: 6 } 
                 },
-                afterDatasetsDraw(chart: any) {
-                    const { ctx, scales: { x, y } } = chart;
-                    ctx.font = "20px serif";
-                    ctx.textAlign = "center";
-                    subsetTemps.forEach((temp: number, i: number) => {
-                        const xPos = x.getPixelForTick(i); // trouve la position x de l'heure 
-                        const yPos = y.getPixelForValue(temp) - 20; // trouve la position y de l'heure et décale de 20px
-                    
-                    });
-                }
+                
             }
         }
     });

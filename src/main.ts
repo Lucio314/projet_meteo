@@ -238,7 +238,7 @@ async function init() {
       filterResults.classList.add("hidden");
       loadWeather(locations[0].lat, locations[0].lon, locations[0].name);
     };
-    document
+    
     // on affiche les détails de la première location filtrée
     loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
   };

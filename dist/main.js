@@ -219,7 +219,6 @@ async function init() {
             filterResults.classList.add("hidden");
             loadWeather(locations[0].lat, locations[0].lon, locations[0].name);
         };
-        document;
         // on affiche les détails de la première location filtrée
         loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
     };
@@ -250,8 +249,8 @@ async function init() {
         loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
     };
     try {
-        const currentLoc = await getInitialLocation();
-        await loadWeather(currentLoc.lat, currentLoc.lon, currentLoc.name);
+        addLocation(blois);
+        await loadWeather(BLOIS_LAT, BLOIS_LON, "Blois");
         renderTabs(locations);
         addLocation(blois);
         updateRegionDatalist(); // pour peupler le datalist avec les régions déjà sauvegardées.
