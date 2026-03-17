@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <title>Météo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <div class="container">
     <header class="header">
@@ -21,7 +23,7 @@
     </div>
 
     <!-- Mode nom de ville -->
-    <div id="mode-name"   class="mode-panel">
+    <div id="mode-name" class="mode-panel">
       <input type="text" id="city-input" placeholder="Rechercher une ville..." />
       <button id="btn-add-location">Ajouter</button>
     </div>
@@ -44,7 +46,8 @@
 
     <!-- Mode région -->
     <div id="mode-region" class="mode-panel hidden">
-      <input type="text" id="region-input" placeholder="Nom de région ou département..." />
+      <input type="text" id="region-input" placeholder="Nom de région..." list="regions-list" />
+      <datalist id="regions-list"></datalist>
       <button id="btn-filter-region">Filtrer</button>
     </div>
 
@@ -56,12 +59,13 @@
 
     <section class="current-weather">
       <div id="current"></div>
+
+      <section class="daily-row">
+        <div id="daily"></div>
+      </section>
     </section>
-        <section class="hourly-list">
+    <section class="hourly-list">
       <div id="hourly"></div>
-    </section>
-    <section class="daily-row">
-      <div id="daily"></div>
     </section>
 
 
@@ -74,4 +78,5 @@
   </div>
   <script type="module" src="dist/main.js"></script>
 </body>
+
 </html>

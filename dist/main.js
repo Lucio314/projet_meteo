@@ -9,8 +9,8 @@ const BLOIS_LON = 1.3291;
 const blois = { name: "Blois", lat: BLOIS_LAT, lon: BLOIS_LON, region: "Centre-Val de Loire" };
 // On charge les locations sauvegardées, en s'assurant que la localisation par défaut (Blois) est toujours présente
 const locations = [
-    blois,
-    ...loadLocations().filter(l => l.lat !== BLOIS_LAT || l.lon !== BLOIS_LON)
+    //blois,
+    ...loadLocations() //.filter(l => l.lat !== BLOIS_LAT || l.lon !== BLOIS_LON)
 ];
 async function loadWeather(lat, lon, cityName) {
     const currentEl = document.getElementById("current");
@@ -18,12 +18,17 @@ async function loadWeather(lat, lon, cityName) {
     const hourlyEl = document.getElementById("hourly");
     const mainTitle = document.getElementById("main-title");
     const data = await fetchWeatherCached(lat, lon);
+    // on garde les données globalement pour les clics sur les jours
+    window.weatherData = data;
+    // rendu des composants
     renderCurrent(currentEl, data.current);
     renderDaily(dailyEl, data.daily);
     renderHourly(hourlyEl, data.hourly, data.current.time);
     renderWeatherChart("chart", data.hourly, data.current.time);
-    if (mainTitle)
+    // mise à jour du titre
+    if (mainTitle) {
         mainTitle.textContent = `Météo – ${cityName}`;
+    }
 }
 // Ajoute une nouvelle location à la liste et la sauvegarde, en évitant les doublons
 function addLocation(newLoc) {
@@ -34,6 +39,7 @@ function addLocation(newLoc) {
     }
     locations.push(newLoc);
     saveLocations(locations);
+    updateRegionDatalist();
     loadWeather(newLoc.lat, newLoc.lon, newLoc.name);
 }
 // Supprime une location de la liste et met à jour le stockage
@@ -51,6 +57,7 @@ function removeLocation(index) {
     else {
         loadWeather(BLOIS_LAT, BLOIS_LON, "Blois");
     }
+    updateRegionDatalist();
 }
 // renderTabs gère l'affichage des onglets et les interactions avec le menu de filtre
 function renderTabs(locations) {
@@ -84,6 +91,34 @@ function renderTabs(locations) {
             tab.appendChild(closeBtn);
         }
         tabsContainer.appendChild(tab);
+    });
+}
+function updateRegionDatalist() {
+    const datalist = document.getElementById("regions-list");
+    const regions = [...new Set(locations
+            .map(l => l.region)
+            .filter((r) => !!r))];
+    datalist.innerHTML = regions.map(r => `<option value="${r}">`).join("");
+}
+async function getInitialLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(blois);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            try {
+                const { name, region } = await reverseGeocode(lat, lon);
+                const loc = { name, lat, lon, region };
+                addLocation(loc);
+                resolve(loc);
+            }
+            catch {
+                resolve(blois);
+            }
+        }, () => resolve(blois));
     });
 }
 async function init() {
@@ -184,14 +219,13 @@ async function init() {
             filterResults.classList.add("hidden");
             loadWeather(locations[0].lat, locations[0].lon, locations[0].name);
         };
-        document;
         // on affiche les détails de la première location filtrée
         loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
     };
     // filtrage par région
     const btnFilterRegion = document.getElementById("btn-filter-region");
     btnFilterRegion.onclick = () => {
-        const regionQuery = document.getElementById("region-input").value.trim().toLowerCase();
+        let regionQuery = document.getElementById("region-input").value.trim().toLowerCase();
         if (!regionQuery) {
             alert("Veuillez entrer un nom de région ou département.");
             return;
@@ -215,8 +249,11 @@ async function init() {
         loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
     };
     try {
+        addLocation(blois);
         await loadWeather(BLOIS_LAT, BLOIS_LON, "Blois");
         renderTabs(locations);
+        addLocation(blois);
+        updateRegionDatalist(); // pour peupler le datalist avec les régions déjà sauvegardées.
     }
     catch (err) {
         document.getElementById("current").innerHTML = "Erreur chargement météo";

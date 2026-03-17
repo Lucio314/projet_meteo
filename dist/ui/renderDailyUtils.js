@@ -1,11 +1,13 @@
 import { formatDate } from "../utils/formData.js";
 import { getWeatherDescription, getWeatherEmoji } from "../utils/weatherInterpreter.js";
 import { analyzeWeatherTrend } from "../utils/weatherTrend.js";
+import { renderWeatherChart } from "./chart.js";
+import { renderHourly } from "./render.js";
 function createDailyCard(date, code, max, min) {
     const { day, num } = formatDate(date);
     const today = num === new Date().getDate().toString() ? "Aujour." : day;
     return `
-    <div class="day-card">
+    <div class="day-card" data-date="${date}">
       <div class="day-header">
         <span class="day-num">${num}</span>
         <span class="day-name">${today}</span>
@@ -22,6 +24,7 @@ function renderDailyCards(dates, codes, maxTemps, minTemps) {
 export function renderDaily(el, data) {
     let currentBlock = 0;
     const blockCount = Math.ceil(data.time.length / 7);
+    const hourlyEl = document.getElementById("hourly");
     function updateView() {
         const start = currentBlock * 7;
         const end = start + 7;
@@ -47,6 +50,27 @@ export function renderDaily(el, data) {
         el.querySelector(".next-block")?.addEventListener("click", () => {
             currentBlock = Math.min(blockCount - 1, currentBlock + 1);
             updateView();
+        });
+        el.querySelectorAll(".day-card").forEach(card => {
+            card.addEventListener("click", () => {
+                const selectedDate = card.dataset.date;
+                const weatherData = window.weatherData;
+                const today = new Date().toISOString().split("T")[0];
+                let startTime;
+                if (selectedDate === today) {
+                    startTime = weatherData.current.time;
+                }
+                else {
+                    startTime = `${selectedDate}T00:00`;
+                }
+                renderHourly(hourlyEl, weatherData.hourly, startTime);
+                renderWeatherChart("chart", weatherData.hourly, startTime);
+                // highlight sur le jour sélectionné
+                el.querySelectorAll(".day-card").forEach(c => c.classList.remove("selected"));
+                card.classList.add("selected");
+                renderHourly(hourlyEl, weatherData.hourly, selectedDate);
+                renderWeatherChart("chart", weatherData.hourly, selectedDate);
+            });
         });
     }
     updateView();
