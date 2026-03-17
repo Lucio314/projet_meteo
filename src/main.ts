@@ -1,4 +1,4 @@
-import { geocodeLocation, reverseGeocode } from "./api/nominatim.js";
+import { geocodeLocation, getCitiesInBBox, reverseGeocode } from "./api/nominatim.js";
 import { renderCurrent, renderHourly } from "./ui/render.js";
 import { renderDaily } from "./ui/renderDailyUtils.js";
 import type { Location } from "./models/location.js";
@@ -136,155 +136,312 @@ async function getInitialLocation(): Promise<Location> {
     );
   });
 }
-
 async function init() {
+
+  //  INPUTS 
+
   const cityInput = document.getElementById("city-input") as HTMLInputElement;
+
   // Handler du bouton Ajouter
   const latInput = document.getElementById("lat-input") as HTMLInputElement;
   const lonInput = document.getElementById("lon-input") as HTMLInputElement;
+
   const addTabByCoords = document.getElementById("btn-add-coords")!;
   const addTabByLocation = document.getElementById("btn-add-location")!;
+  const btnBBoxApi = document.getElementById("btn-bbox-api")!;
+  const btnFilterBbox = document.getElementById("btn-filter-bbox")!;
+
+
+  //  AJOUT PAR NOM DE VILLE 
+
   addTabByLocation.onclick = async () => {
+
     const cityQuery = cityInput.value.trim();
+
     // cas nom de ville
-    try {
-      const results = await geocodeLocation(cityQuery);
-      if (results.length === 0) { alert("Aucun résultat trouvé."); return; }
-      const lat = parseFloat(results[0].lat);
-      const lon = parseFloat(results[0].lon);
-      const { name, region } = await reverseGeocode(lat, lon);
-      addLocation({ name: name, lat, lon, region });
-      renderTabs(locations);
-      cityInput.value = "";
-    } catch (err) {
-      window.alert("Erreur lors de la recherche.");
-      console.error(err);
+    if (!cityQuery) {
+      alert("Veuillez entrer un nom de ville.");
+      return;
     }
 
+    try {
+
+      const results = await geocodeLocation(cityQuery);
+
+      if (results.length === 0) {
+        alert("Aucun résultat trouvé.");
+        return;
+      }
+
+      const lat = parseFloat(results[0].lat);
+      const lon = parseFloat(results[0].lon);
+
+      // reverseGeocode pour récupérer un nom propre + région
+      const { name, region } = await reverseGeocode(lat, lon);
+
+      addLocation({ name, lat, lon, region });
+
+      renderTabs(locations);
+
+      cityInput.value = "";
+
+    } catch (err) {
+
+      window.alert("Erreur lors de la recherche.");
+      console.error(err);
+
+    }
 
   };
 
+
+  //  AJOUT PAR COORDONNÉES 
+
   addTabByCoords.onclick = async () => {
+
     const latVal = latInput.value.trim();
     const lonVal = lonInput.value.trim();
+
     // cas coordonnées
     const lat = parseFloat(latVal);
     const lon = parseFloat(lonVal);
+
     if (isNaN(lat) || isNaN(lon)) {
       alert("Coordonnées invalides.");
       return;
     }
+
     if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       alert("Les coordonnées doivent être dans les limites valides (lat: -90 à 90, lon: -180 à 180).");
       return;
     }
+
     const { name, region } = await reverseGeocode(lat, lon);
+
     addLocation({ name, lat, lon, region });
+
     renderTabs(locations);
+
     latInput.value = "";
     lonInput.value = "";
+  };
 
-    alert("Entrez un nom de ville ou des coordonnées.");
-  }
 
-  // on change les modes d'affichage (region ou bounding box) 
 
+  // on change les modes d'affichage (region ou bounding box)
 
   const modeButtons = document.querySelectorAll(".mode-btn");
+
   modeButtons.forEach(btn => {
+
     (btn as HTMLElement).onclick = () => {
+
       modeButtons.forEach(b => b.classList.remove("active"));
+
       btn.classList.add("active");
+
       const mode = btn.getAttribute("data-mode");
+
       document.querySelectorAll(".mode-panel").forEach(panel => {
+
         if (panel.id === `mode-${mode}`) {
           panel.classList.remove("hidden");
         } else {
           panel.classList.add("hidden");
         }
+
       });
+
       // Cacher le bouton reset quand on change de mode
       document.getElementById("filter-results")?.classList.add("hidden");
+
     };
+
   });
 
-  // filtrage par bounding box (on teste les villes de france avec 45 51 -5 10)
-  const btnFilterBbox = document.getElementById("btn-filter-bbox")!;
-  btnFilterBbox.onclick = () => {
+
+
+  // Fonction commune pour récupérer et valider les coordonnées bbox
+
+  function getBBoxValues() {
+
     const minLat = parseFloat((document.getElementById("min-lat") as HTMLInputElement).value);
     const maxLat = parseFloat((document.getElementById("max-lat") as HTMLInputElement).value);
     const minLon = parseFloat((document.getElementById("min-lon") as HTMLInputElement).value);
     const maxLon = parseFloat((document.getElementById("max-lon") as HTMLInputElement).value);
+
     if ([minLat, maxLat, minLon, maxLon].some(v => isNaN(v))) {
       alert("Veuillez entrer des coordonnées valides.");
-      return;
+      return null;
     }
+
     if (minLat > maxLat || minLon > maxLon) {
       alert("Les valeurs minimales doivent être inférieures aux valeurs maximales.");
-      return;
+      return null;
     }
-    const filtered = locations.filter(loc => loc.lat >= minLat && loc.lat <= maxLat && loc.lon >= minLon && loc.lon <= maxLon);
-    if (filtered.length === 0) {
-      alert("Aucune location trouvée dans cette bounding box.");
-      return;
-    }
-    renderTabs(filtered);
-    // bouton de retour à la liste complète
-    const filterResults = document.getElementById("filter-results")!;
-    filterResults.innerHTML = `<button id="btn-clear-filter">Reset</button>`;
-    filterResults.classList.remove("hidden");
-    document.getElementById("btn-clear-filter")!.onclick = () => {
-      renderTabs(locations);
-      filterResults.classList.add("hidden");
-      loadWeather(locations[0].lat, locations[0].lon, locations[0].name);
-    };
-    
-    // on affiche les détails de la première location filtrée
-    loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
+
+    return { minLat, maxLat, minLon, maxLon };
+  }
+
+
+// ================= FILTRAGE LOCAL PAR BBOX =================
+// filtrage par bounding box (ex: villes de France 45 51 -5 10)
+// ce filtre agit UNIQUEMENT sur les locations déjà enregistrées (localStorage)
+
+btnFilterBbox.onclick = () => {
+
+  const bbox = getBBoxValues();
+  if (!bbox) return;
+
+  const { minLat, maxLat, minLon, maxLon } = bbox;
+
+  // filtrage uniquement sur les villes déjà présentes dans "locations"
+  const filtered = locations.filter(loc =>
+    loc.lat >= minLat &&
+    loc.lat <= maxLat &&
+    loc.lon >= minLon &&
+    loc.lon <= maxLon
+  );
+
+  if (filtered.length === 0) {
+    alert("Aucune location trouvée dans cette bounding box.");
+    return;
+  }
+
+  // on affiche uniquement les tabs filtrés
+  renderTabs(filtered);
+
+  // bouton de retour à la liste complète
+  const filterResults = document.getElementById("filter-results")!;
+
+  filterResults.innerHTML = `<button id="btn-clear-filter">Reset</button>`;
+  filterResults.classList.remove("hidden");
+
+  document.getElementById("btn-clear-filter")!.onclick = () => {
+
+    // on restaure les tabs complets (localStorage)
+    renderTabs(locations);
+
+    filterResults.classList.add("hidden");
+
+    loadWeather(locations[0].lat, locations[0].lon, locations[0].name);
+
   };
 
-  // filtrage par région
+  // on affiche la météo de la première ville filtrée
+  loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
+};
+
+
+// ================= RECHERCHE API PAR BBOX =================
+// récupération de nouvelles villes via Nominatim
+// IMPORTANT : cette action NE MODIFIE PAS les tabs ni le localStorage
+// elle sert uniquement à proposer des villes dans la datalist
+
+btnBBoxApi.onclick = async () => {
+
+  const bbox = getBBoxValues();
+  if (!bbox) return;
+
+  const { minLat, maxLat, minLon, maxLon } = bbox;
+
+  try {
+
+    const cities = await getCitiesInBBox(minLat, maxLat, minLon, maxLon);
+
+    // Suppression des doublons par nom de ville
+    const uniqueCities = Array.from(
+      new Map(cities.map(c => [c.name.toLowerCase(), c])).values()
+    );
+
+    // stocké temporairement pour permettre la sélection via la datalist
+    // ceci ne touche pas les tabs ni le localStorage
+    (window as any).bboxCities = uniqueCities;
+
+    const datalist = document.getElementById("city-datalist")!;
+
+    // mise à jour de la datalist avec les villes trouvées
+    datalist.innerHTML = uniqueCities
+      .map(c => `<option value="${c.name}">`)
+      .join("");
+
+  } catch (err) {
+
+    console.error(err);
+    alert("Erreur lors de la recherche des villes.");
+
+  }
+
+};
+  // FILTRAGE PAR RÉGION 
+
   const btnFilterRegion = document.getElementById("btn-filter-region")!;
+
   btnFilterRegion.onclick = () => {
-    let regionQuery = (document.getElementById("region-input") as HTMLInputElement).value.trim().toLowerCase();
+
+    let regionQuery = (document.getElementById("region-input") as HTMLInputElement)
+      .value
+      .trim()
+      .toLowerCase();
+
     if (!regionQuery) {
       alert("Veuillez entrer un nom de région ou département.");
       return;
     }
-    const filtered = locations.filter(loc => loc?.region?.toLowerCase().includes(regionQuery));
+
+    const filtered = locations.filter(loc =>
+      loc?.region?.toLowerCase().includes(regionQuery)
+    );
 
     if (filtered.length === 0) {
       alert("Aucune location trouvée pour cette région.");
       return;
     }
+
     renderTabs(filtered);
-    // bouton de retour à la liste complète
+
     const filterResults = document.getElementById("filter-results")!;
+
     filterResults.innerHTML = `<button id="btn-clear-filter">Reset</button>`;
+
     filterResults.classList.remove("hidden");
+
     document.getElementById("btn-clear-filter")!.onclick = () => {
+
       renderTabs(locations);
+
       filterResults.classList.add("hidden");
+
       loadWeather(locations[0].lat, locations[0].lon, locations[0].name);
 
-
     };
-    // on affiche les détails de la première location filtrée
+
+    // afficher la première ville filtrée
     loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
+
   };
+
 
 
   try {
 
     const currentLoc = await getInitialLocation();
+
     await loadWeather(currentLoc.lat, currentLoc.lon, currentLoc.name);
+
     renderTabs(locations);
-    addLocation(blois);
+
+
     updateRegionDatalist(); // pour peupler le datalist avec les régions déjà sauvegardées.
+
   } catch (err) {
+
     document.getElementById("current")!.innerHTML = "Erreur chargement météo";
+
     console.error(err);
+
   }
+
 }
 
 init();

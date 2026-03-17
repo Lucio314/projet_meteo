@@ -18,3 +18,34 @@ export async function reverseGeocode(lat, lon) {
     const region = data.address?.state ?? "Région inconnue";
     return { name, region };
 }
+export async function getCitiesInBBox(minLat, maxLat, minLon, maxLon) {
+    const url = `${GEOCODING_URL}?format=json` +
+        `&q=city` +
+        `&bounded=1` +
+        `&limit=20` +
+        `&viewbox=${minLon},${maxLat},${maxLon},${minLat}` +
+        `&featuretype=city`;
+    const res = await fetch(url, {
+        headers: {
+            "Accept": "application/json",
+            "User-Agent": "meteo-app-student-project"
+        }
+    });
+    if (!res.ok) {
+        throw new Error(`Erreur bbox: ${res.status} ${res.statusText}`);
+    }
+    const data = await res.json();
+    const locations = data
+        .map((place) => {
+        const lat = parseFloat(place.lat);
+        const lon = parseFloat(place.lon);
+        const parts = place.display_name.split(",");
+        return {
+            name: parts[0].trim(),
+            lat,
+            lon,
+            region: parts[1]?.trim() ?? ""
+        };
+    });
+    return locations;
+}
