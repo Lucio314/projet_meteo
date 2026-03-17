@@ -9,8 +9,8 @@ const BLOIS_LON = 1.3291;
 const blois = { name: "Blois", lat: BLOIS_LAT, lon: BLOIS_LON, region: "Centre-Val de Loire" };
 // On charge les locations sauvegardées, en s'assurant que la localisation par défaut (Blois) est toujours présente
 const locations = [
-    blois,
-    ...loadLocations().filter(l => l.lat !== BLOIS_LAT || l.lon !== BLOIS_LON)
+    //blois,
+    ...loadLocations() //.filter(l => l.lat !== BLOIS_LAT || l.lon !== BLOIS_LON)
 ];
 async function loadWeather(lat, lon, cityName) {
     const currentEl = document.getElementById("current");
@@ -215,6 +215,7 @@ async function init() {
         loadWeather(filtered[0].lat, filtered[0].lon, filtered[0].name);
     };
     try {
+        addLocation(blois);
         await loadWeather(BLOIS_LAT, BLOIS_LON, "Blois");
         renderTabs(locations);
     }
