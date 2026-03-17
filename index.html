@@ -24,7 +24,8 @@
 
     <!-- Mode nom de ville -->
     <div id="mode-name" class="mode-panel">
-      <input type="text" id="city-input" placeholder="Rechercher une ville..." />
+      <input type="text" id="city-input" placeholder="Rechercher une ville..." list="city-datalist" />
+      <datalist id="city-datalist"></datalist>
       <button id="btn-add-location">Ajouter</button>
     </div>
 
@@ -41,7 +42,9 @@
       <input type="number" id="max-lat" placeholder="Lat max" min="-90" max="90" step="0.0001" />
       <input type="number" id="min-lon" placeholder="Lon min" min="-180" max="180" step="0.0001" />
       <input type="number" id="max-lon" placeholder="Lon max" min="-180" max="180" step="0.0001" />
-      <button id="btn-filter-bbox">Filtrer</button>
+      <button id="btn-filter-bbox">Filtrer (mes villes) </button>
+      <button id="btn-bbox-api">Chercher nouvelles villes</button>
+
     </div>
 
     <!-- Mode région -->
